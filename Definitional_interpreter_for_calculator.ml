@@ -20,7 +20,7 @@ let rec eval rho x = match x with
   | Abs e -> if (value (eval rho e)) >= 0 then Const_ (value (eval rho e)) else Const_ (-1 * value (eval rho e))
   | T -> T_
   | F -> F_
-  | Neg e -> if (eval rho e) = T_ then F_ else T_
+  | Neg e -> Const_ ((-1)*value(eval rho e))
   | Var x -> rho x
   | Add(e1, e2) -> Const_ (value (eval rho e1) + value (eval rho e2))
   | Sub(e1, e2) -> Const_ (value (eval rho e1) - value (eval rho e2))
@@ -223,3 +223,112 @@ eval rho exp7;;
 
 
 (* END OF CODE *)
+
+(* Testcases *)
+
+let rho x = match x with
+	"ident1" -> Const_ 1
+  | "ident2" -> Const_ 2
+  | _ -> Const_ 0;;
+
+let e = Add(Const 1, Const 2);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Mul(Const 6, Const 6);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Exponent(Const 2, Const 4);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Div(Const 6, Const 3);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Var "ident1";;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Var "ident2";;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Abs(Const(-1));;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Proj(2, Tuple([Const 12; Const 121; Const 33], 3));;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Sub(Proj(2, Tuple([Const 2; Const 5; Const 8], 3)), Const 1);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Mod(Proj(2, Tuple([Const 2; Const 5; Const 8], 3)), Const 2);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Or(
+	Eq(Const 5, Const 5), 
+	And(
+		Eq(Sub(Const 2, Const 1), Const 1),
+		Mod(Proj(2, Tuple([Const 2; Const 5; Const 8], 3)), Const 2)
+	) 
+	);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = And(T, F);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Implies(Not(Implies(Or(T, F), And(T, F))),Implies(And(T, F), Or(T, F)));;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Gte(Const 4, Const 2);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Lte(Const 4, Const 2);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Gt(Const 4, Const 2);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Lt(Const 4, Const 2);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Neg(Const 1);;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
+let e = Abs(Neg(Const 4));;
+compile e;;
+execute [] rho (compile e);;
+eval rho e;;
+
