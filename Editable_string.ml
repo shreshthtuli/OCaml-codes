@@ -110,4 +110,42 @@ let last s = match s with
   (* O(1) pattern match *)
 
 (* End of Code *)
+
+
+(* Testcases *)
+
+let alphabet=["1"; "2"; "a"; "b"; "c"; "A"];;
+
+lgh EmptyString;;
+lgh (create "a");;
+lgh (create "abc");;
+lgh (create "12");;
+
+nonempty EmptyString;;
+nonempty (create "a");;
+nonempty (create "12");;
+
+concat EmptyString EmptyString;;
+concat EmptyString (create "a");;
+concat (create "1") EmptyString;;
+concat (create "1A") (create "abc");;
+
+reverse EmptyString;;
+reverse (create "abc");;
+reverse (create "12");;
+
+first EmptyString;;
+first (create "a");;
+first (create "abc");;
+
+last EmptyString;;
+last (create "a");;
+last (create "abc");;
+
+let editable = create "abac12a2aAac211";;
+
+forward editable;;
+back editable;;
+moveTo 10 editable;;
+replace 'b' editable;;
   
