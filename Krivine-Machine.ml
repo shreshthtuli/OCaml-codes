@@ -15,7 +15,7 @@ type exp = Const of int | Abs of exp | Neg of exp | V of variable | Add of exp *
 | Implies of exp * exp | Eq of exp * exp | Gt of exp * exp | Lt of exp * exp
 | Gte of exp * exp | Lte of exp * exp | Tuple of exp list * int | Proj of int * exp
 | IfTE of exp * exp * exp | Lambda of variable * exp | Apply of exp * exp
-| NIL | TUPLE of exp list * answer list * int| IF of exp * exp
+| NIL | TUPLE of exp list * answer list * int| IF of exp * exp | Letin of variable * exp * exp
 and table = (variable * closure) list 
 and closure = Clos of table * exp
 and answer = Const_ of int | T_ | F_ | Tuple_ of answer list * int | ValClos of table * exp
@@ -162,7 +162,8 @@ let rec execute c s = match (c, s) with
   							[] -> raise Error
   						  |	(x1, x2)::xs -> if (x1=a) then x2 else find a xs in
   						execute (find x t) s
-              
+  | (Clos(t, Letin(x, e1, e2)), s) -> execute (Clos(((x, Clos([],e1))::t), e2)) s       
+
   | (Clos(t, Lambda(x, e1')), cl::s) -> execute (Clos(((x,cl)::t), e1')) s
   | (Clos(t, Apply(e1, e2)), s) -> execute (Clos(t, e1)) (Clos(t, e2)::s)
   | (Clos(t, x), []) -> unpack (Clos(t, x));;
@@ -238,3 +239,31 @@ exec e;;
 
 let e = Add(Const 4, IfTE(Eq(Const 7, Const 7), Const 1, Bool T));;
 exec e;;
+
+
+(* Other test cases *)
+
+
+execute (Clos([(Var "z", Clos([], Const 2))], V( Var "z"))) [];;
+
+execute (Clos([],Add(Add(Const(2),Const(3)),Add(Const(2),Const(3))))) [];;
+
+execute (Clos([(Var("z"),Clos([],Const(3)))],Add(Const(2),V(Var("z"))))) [];;
+
+execute (Clos([],Apply(Lambda(Var("x"),Add(V(Var("x")),Const(1))),Const(2)))) [];;
+
+execute (Clos([],Apply(Lambda(Var("x"),Mul(V(Var("x")),Add(V(Var("x")),Const(1)))),Const(2)))) [];;
+
+execute (Clos([],Apply(Lambda(Var("x"),Apply(Lambda(Var("d"),Mul(V(Var("d")),Const(2))),Const(2))),Const(2)))) [];;
+
+execute (Clos([],IfTE(Gt(Const(8),Const(2)),Apply(Lambda(Var("x"),Div(V(Var("x")),Const(2))),Const(2)),Apply(Lambda(Var("x"),Mul(V(Var("x")),Add(V(Var("x")),Const(1)))),Const(2))))) [];;
+
+execute (Clos([],IfTE(Gt(Const(1),Const(2)),Apply(Lambda(Var("x"),Div(V(Var("x")),Const(2))),Const(2)),Apply(Lambda(Var("x"),Mul(V(Var("x")),Add(V(Var("x")),Const(1)))),Const(2))))) [];;
+
+execute (Clos([],Letin(Var("a"),Const(2),Add(V(Var("a")),Const(20))))) [];;
+
+(*krivine(ACL([],LetinEnd(Seq[Assgn(Var("a"),Num(2))],Plus(Var("a"),Num(20)))),[]);;*)
+
+execute (Clos([],Proj(2, Tuple([Const(1);Const(2);Const(3)],3)))) [];;
+
+(*execute (Clos([],Apply(Lambda(Var("x"),LetinEnd(Para[Assgn(Var("a"),Num(2))],Plus(Var("a"),Var("x")))),Num(2))),[]);;*)

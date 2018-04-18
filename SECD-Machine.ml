@@ -135,7 +135,12 @@ let rec execute s e c d = match (s,e,c,d) with
   | (s', e', UNBIND::c', (s, e, c)::d') -> execute s' e c' d'
   | (s::s', e, [], d) -> s;;
 
-let exec e = execute [] [] (compile e) [];;
+let rec map f l = match l with
+    [] -> []
+  | x::xs -> (f x)::(map f xs);;
+
+let exec e = let f x = execute [] [] (compile x) [] in
+  map f e;;
 
 (* END OF CODE *)
 
@@ -231,3 +236,20 @@ let e = Letin(Seq(Def(Var "x", Const 4), Def(Var "y", Add(V(Var "x"), Const 1)))
 compile e;;
 execute [] [(Var "x", Const_ 2)] (compile e) [];;
 
+(* Other test cases *)
+
+exec([Proj(2, Tuple([Const(12);Const(121);Const(33)], 3))]);;
+
+exec([Letin(Par(Def(Var("a"),Const(1)),Def(Var("b"),Const(2))),Add(Add(V(Var("a")),V(Var("b"))),Mul(V(Var("a")),Const(2))));Mul(Const(2),Const(3))]);;
+
+exec([IfTE(Gt(Const(4),Const(2)),Add(Const(1),Const(3)),Sub(Const(1),Const(3)))]);;
+
+exec([Letin(Seq(Def(Var("a"),Const(1)),Def(Var("b"),Const(2))),Add(Add(V(Var("a")),V(Var("b"))),Mul(V(Var("a")),Const(2))));Mul(Const(2),Const(3))]);;
+
+exec([Apply(Lambda(Var("x"),Add(V(Var("x")),Const(1))),Const(2))]);;
+
+exec([Apply(Lambda(Var("x"),Mul(V(Var("x")),Add(V(Var("x")),Const(1)))),Const(2))]);;
+
+exec([Apply(Lambda(Var("x"),Apply(Lambda(Var("d"),Mul(V(Var("d")),Const(2))),Const(2))),Const(2))]);;
+
+exec([Letin(Def(Var("a"),Letin(Def(Var("a"),Const(1)),Apply(Lambda(Var("x"),Add(V(Var("x")),Const(1))),V(Var("a"))))),Add(V(Var("a")),Const(1)))]);;
